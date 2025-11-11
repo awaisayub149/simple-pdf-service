@@ -1,0 +1,33 @@
+{
+  "name": "simple-pdf-service",
+  "version": "0.0.1",
+  "description": "simple pdf service using puppeteer",
+  "keywords": [
+    "pdf",
+    "puppeteer",
+    "docker",
+    "conatiner",
+    "html",
+    "to",
+    "pdf"
+  ],
+  "homepage": "https://github.com/awaisayub149/simple-pdf-service#readme",
+  "bugs": {
+    "url": "https://github.com/awaisayub149/simple-pdf-service/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/awaisayub149/simple-pdf-service.git"
+  },
+  "license": "ISC",
+  "author": "Awais Ayub <awaisayub149@gmail.com>",
+  "type": "commonjs",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "express": "^5.1.0",
+    "puppeteer": "^24.29.1"
+  }
+}
