@@ -23,7 +23,7 @@ app.post('/generate', async (req, res) => {
             '--single-process',
             '--disable-gpu'
         ],
-        executablePath: process.env.PUPPETEER_EXECUTABLE_PATH, // For production environments
+        // executablePath: process.env.PUPPETEER_EXECUTABLE_PATH, // For production environments
     };
 
     if (!html) {
