@@ -5,6 +5,10 @@ const puppeteer = require('puppeteer');
 const app = express();
 app.use(bodyParser.json({ limit: '10mb' }));
 
+app.get('/health', async (req, res) => {
+    res.status(200).send('ok')
+})
+
 app.post('/generate', async (req, res) => {
     const { html, launchOptions = {} } = req.body;
     const defaultLaunchOptions = {
