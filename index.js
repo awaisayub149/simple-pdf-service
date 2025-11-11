@@ -1,3 +1,4 @@
+// index.js
 const express = require('express');
 const bodyParser = require('body-parser');
 const puppeteer = require('puppeteer');
@@ -5,14 +6,10 @@ const puppeteer = require('puppeteer');
 const app = express();
 app.use(bodyParser.json({ limit: '10mb' }));
 
-app.get('/health', async (req, res) => {
-    res.status(200).send('ok')
-})
-
-app.post('/generate', async (req, res) => {
-    const { html, launchOptions = {} } = req.body;
+// Move PDF generation logic into a separate async function
+async function generatePdf(html, launchOptions = {}) {
     const defaultLaunchOptions = {
-        headless: 'new',
+        headless: true,
         args: [
             '--no-sandbox',
             '--disable-setuid-sandbox',
@@ -20,43 +17,51 @@ app.post('/generate', async (req, res) => {
             '--disable-accelerated-2d-canvas',
             '--no-first-run',
             '--no-zygote',
-            '--single-process',
             '--disable-gpu'
         ],
-        // executablePath: process.env.PUPPETEER_EXECUTABLE_PATH, // For production environments
     };
 
-    if (!html) {
-        return res.status(400).json({ success: false, message: 'Missing html for PDF' });
-    }
+    if (!html) throw new Error('Missing html for PDF');
 
     let browser;
     try {
-        // Launch Puppeteer
         browser = await puppeteer.launch({ ...defaultLaunchOptions, ...launchOptions });
-
         const page = await browser.newPage();
         await page.setContent(html, { waitUntil: 'networkidle0' });
-
         const pdfBuffer = await page.pdf({
             format: 'A4',
             printBackground: true,
             margin: { top: '20mm', right: '10mm', bottom: '20mm', left: '10mm' },
         });
-
-        res.set({
-            // 'Content-Type': 'application/pdf',
-            // 'Content-Disposition': `attachment; filename=generated.pdf`,
-            'Content-Length': pdfBuffer.length,
-        });
-
-        res.send(pdfBuffer);
-    } catch (err) {
-        console.error('PDF error:', err);
-        res.status(500).json({ success: false, message: err.message });
+        return pdfBuffer;
     } finally {
         if (browser) await browser.close();
     }
+}
+
+// API route
+app.post('/generate', async (req, res) => {
+    const { html, launchOptions } = req.body;
+    try {
+        const pdfBuffer = await generatePdf(html, launchOptions);
+        res.set({
+            'Content-Type': 'application/pdf',
+            'Content-Length': pdfBuffer.length,
+        });
+        res.end(pdfBuffer);
+    } catch (err) {
+        console.error('PDF error:', err);
+        res.status(500).json({ success: false, message: err.message });
+    }
 });
 
-app.listen(8080, () => console.log('PDF service running on port 8080'));
+// Healthcheck
+app.get('/health', (req, res) => res.status(200).send('ok'));
+
+// Start server only if this file is run directly
+if (require.main === module) {
+    app.listen(8080, () => console.log('PDF service running on port 8080'));
+}
+
+// Export for tests
+module.exports = { app, generatePdf };
